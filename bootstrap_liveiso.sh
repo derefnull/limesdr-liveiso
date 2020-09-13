@@ -42,23 +42,48 @@ GUI_EOF
 
 
 cat << PKG_EOF > config/package-lists/build.list.chroot
+autoconf
+automake
+bison
 cmake
-git
-g++
-swig
 doxygen
+ffmpeg
+fftw3-dev
+flex
+freeglut3-dev
+g++
+git
+graphviz
+libasound2-dev
+libavcodec-dev
+libavformat-dev
 libboost-all-dev
-liblog4cpp5-dev
-libsqlite3-dev
+libczmq-dev
+libfftw3-dev
 libgmp-dev
 libi2c-dev
+liblog4cpp5-dev
+libopencv-dev
+libopus-dev
+libpulse-dev
 libpython-dev
+libqt5multimedia5-plugins
+libqt5opengl5-dev
+libqt5svg5-dev
+libqt5websockets5-dev
+libqwt-qt5-dev
+libsamplerate0-dev
+libsqlite3-dev
+libspeexdsp-dev 
+libtool
 libusb-1.0-0
 libusb-1.0-0-dev
+libusb-dev
 libwxgtk3.0-dev
-freeglut3-dev
-qtbase5-dev
+libxml2-dev
 pkg-config
+pulseaudio
+pybind11-dev
 python-numpy
 python3
 python3-click
@@ -73,12 +98,13 @@ python3-scipy
 python3-sphinx
 python3-yaml
 python3-zmq
-libqt5svg5-dev
-libqwt-qt5-dev
-fftw3-dev
-libpulse-dev
-libczmq-dev
-pybind11-dev
+qt5-default
+qtbase5-dev
+qtchooser
+qtmultimedia5-dev
+qttools5-dev
+qttools5-dev-tools
+swig
 wget
 PKG_EOF
 
@@ -98,14 +124,13 @@ mkdir \\\$LIME_SRC -p
 cd \\\$LIME_SRC
 git clone https://github.com/myriadrf/LimeSuite.git
 git clone https://github.com/pothosware/SoapySDR.git
-#git clone https://github.com/gnuradio/volk.git
 git clone --recursive https://github.com/pothosware/PothosCore.git
 git clone https://github.com/gnuradio/volk.git
 git clone --recursive https://github.com/gnuradio/gnuradio.git #follwing https://wiki.gnuradio.org/index.php/InstallingGR#Notes
 git clone https://github.com/osmocom/rtl-sdr.git
 git clone https://git.osmocom.org/gr-osmosdr
 git clone https://github.com/csete/gqrx.git
-#cd gqrx && git checkout v2.12.1 && cd ..
+#git clone git://git.osmocom.org/sdrangelove.git
 
 function buildit() {
   echo building \\\$1
@@ -138,6 +163,63 @@ buildit volk
 build_gnr
 buildit gr-osmosdr
 buildit gqrx
+#buildit sdrangelove
+
+# Build SDRAngel
+
+# CM265cc
+cd \\\$LIME_SRC
+git clone https://github.com/f4exb/cm256cc.git
+cd cm256cc
+git reset --hard c0e92b92aca3d1d36c990b642b937c64d363c559
+mkdir build; cd build
+cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL ..
+make -j \\\$(nproc --all) install
+
+# MBElib
+cd \\\$LIME_SRC
+git clone https://github.com/szechyjs/mbelib.git
+cd mbelib
+git reset --hard 9a04ed5c78176a9965f3d43f7aa1b1f5330e771f
+mkdir build; cd build
+cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL ..
+make -j \\\$(nproc --all) install
+
+# SerialDV
+cd \\\$LIME_SRC
+git clone https://github.com/f4exb/serialDV.git
+cd serialDV
+git reset --hard "v1.1.4"
+mkdir build; cd build
+cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL ..
+make -j \\\$(nproc --all) install
+
+# DSDcc
+cd \\\$LIME_SRC
+git clone https://github.com/f4exb/dsdcc.git
+cd dsdcc
+git reset --hard "v1.9.0"
+mkdir build; cd build
+cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL -DUSE_MBELIB=ON ..
+make -j \\\$(nproc --all) install
+
+# Codec2/FreeDV
+cd \\\$LIME_SRC
+git clone https://github.com/drowe67/codec2.git
+cd codec2
+git reset --hard 76a20416d715ee06f8b36a9953506876689a3bd2
+mkdir build_linux; cd build_linux
+cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL ..
+make -j \\\$(nproc --all) install
+
+# SDRAngel
+cd \\\$LIME_SRC
+git clone https://github.com/f4exb/sdrangel.git
+cd sdrangel
+mkdir build; cd build
+cmake -Wno-dev -DDEBUG_OUTPUT=ON -DRX_SAMPLE_24BIT=ON -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL ..
+make -j \\\$(nproc --all) install
+
 
 cat << UDEV_EOF > /etc/udev/rules.d/64-limesuite.rules
 # https://github.com/myriadrf/LimeSuite/blob/master/udev-rules/64-limesuite.rules
