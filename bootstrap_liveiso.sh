@@ -26,7 +26,7 @@ mkdir -p \$PATH_ISO
 apt-get install -y live-build
 
 cd \$PATH_ISO
-lb config -d $SUITE
+lb config -d $SUITE --debian-installer live
 
 # be sure to install a GUI
 cat << GUI_EOF > config/package-lists/gui.list.chroot
