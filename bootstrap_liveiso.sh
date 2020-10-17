@@ -42,6 +42,7 @@ GUI_EOF
 
 
 cat << PKG_EOF > config/package-lists/build.list.chroot
+alsaplayer-common
 autoconf
 automake
 bison
@@ -125,29 +126,31 @@ cd \\\$LIME_SRC
 git clone https://github.com/myriadrf/LimeSuite.git
 git clone https://github.com/pothosware/SoapySDR.git
 git clone --recursive https://github.com/pothosware/PothosCore.git
-git clone https://github.com/gnuradio/volk.git
-git clone --recursive https://github.com/gnuradio/gnuradio.git #follwing https://wiki.gnuradio.org/index.php/InstallingGR#Notes
+git clone --branch v2.3.0 https://github.com/gnuradio/volk.git
 git clone https://github.com/osmocom/rtl-sdr.git
 git clone https://git.osmocom.org/gr-osmosdr
 git clone https://github.com/csete/gqrx.git
-#git clone git://git.osmocom.org/sdrangelove.git
 
 function buildit() {
   echo building \\\$1
   mkdir -p \\\$LIME_SRC/output_\\\$1
-  cmake -S \\\$LIME_SRC/\\\$1 -B \\\$LIME_SRC/output_\\\$1 -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL -DCMAKE_PREFIX_PATH=\\\$LIME_INSTALL
+  cmake -S \\\$LIME_SRC/\\\$1 -B \\\$LIME_SRC/output_\\\$1 -DPYTHON_EXECUTABLE=/usr/bin/python3 -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL -DCMAKE_PREFIX_PATH=\\\$LIME_INSTALL
   make -j\\\$(nproc --all) -C \\\$LIME_SRC/output_\\\$1
   make -C \\\$LIME_SRC/output_\\\$1 install
 }
 
 function build_gnr() {
-  cd \\\$LIME_SRC/gnuradio && git checkout maint-3.8
-  # cd \\\$LIME_SRC/gnuradio && git pull --recurse-submodules=on && git submodule update --init
-  mkdir -p \\\$LIME_SRC/gnuradio/build
-  cmake -S \\\$LIME_SRC/gnuradio -B \\\$LIME_SRC/gnuradio/build -DENABLE_INTERNAL_VOLK=OFF -DENABLE_GR_UHD=OFF -DENABLE_GR_FFT=ON -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL -DCMAKE_PREFIX_PATH=\\\$LIME_INSTALL
-  make -j\\\$(nproc --all) -C \\\$LIME_SRC/gnuradio/build
-  make install -C \\\$LIME_SRC/gnuradio/build
-  cd \\\$LIME_SRC
+ldconfig
+#following https://wiki.gnuradio.org/index.php/InstallingGR#Notes
+cd \\\$LIME_SRC
+git clone --branch v3.8.2.0 https://github.com/gnuradio/gnuradio.git
+cd \\\$LIME_SRC/gnuradio 
+
+
+mkdir -p \\\$LIME_SRC/gnuradio/build
+cmake -S \\\$LIME_SRC/gnuradio -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -B \\\$LIME_SRC/gnuradio/build -DENABLE_GR_VOCODER=OFF -DENABLE_INTERNAL_VOLK=OFF -DENABLE_GR_UHD=OFF -DENABLE_GR_FFT=ON -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL -DCMAKE_PREFIX_PATH=\\\$LIME_INSTALL
+make -j\\\$(nproc --all) -C \\\$LIME_SRC/gnuradio/build
+make install -C \\\$LIME_SRC/gnuradio/build
 }
 
 
@@ -155,7 +158,14 @@ function build_gnr() {
 # Build the projects! 
 #
 cd \\\$LIME_SRC
-buildit SoapySDR
+
+cd SoapySDR
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=\\\$LIME_INSTALL -DCMAKE_PREFIX_PATH=\\\$LIME_INSTALL
+make -j \\\$(nproc --all) install
+
+cd \\\$LIME_SRC
 buildit LimeSuite
 buildit PothosCore
 buildit rtl-sdr
@@ -163,7 +173,6 @@ buildit volk
 build_gnr
 buildit gr-osmosdr
 buildit gqrx
-#buildit sdrangelove
 
 # Build SDRAngel
 
