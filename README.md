@@ -13,6 +13,14 @@ The build approach is nested:
 3. Complete the 'live build' build to ISO
 4. Boot the iso
 
+# Building faster
+
+Use a local package cache [apt-cacher-ng](https://www.unix-ag.uni-kl.de/~bloch/acng/html/index.html) to keep most of your build development off the network
+
+# VirtualBox Support
+
+Facilitating running this ISO in a virtualbox virtual machine, this variant of ISO pre-installs [VirtualBox Guest Additions](https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html)
+
 # Feedback
 
 Contributions are welcome. Please contact me on github, or issue a pull request
@@ -25,3 +33,9 @@ Contributions are welcome. Please contact me on github, or issue a pull request
 
 [GNURadio Install](https://wiki.gnuradio.org/index.php/UbuntuInstall)
 
+[Building VirtualBox](https://www.virtualbox.org/wiki/Linux%20build%20instructions)
+https://download.virtualbox.org/virtualbox/6.1.14/
+
+[VirtualBox Licensing FAQ](https://www.virtualbox.org/wiki/Licensing_FAQ)
+
+[Ubuntu Live Build](https://wiki.ubuntu.com/Live-Build) check out running the iso in qemu-kvm
